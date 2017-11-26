@@ -72,26 +72,26 @@ print("Start loading...")
 inputs = []
 val = []
 for i in range(1,1301):
-    inputs.append((cv2.imread("D:/data/rock (%d).jpg"%i),(1,0,0)))
+    inputs.append((cv2.imread("D:/RPSData/rock (%d).jpg"%i),(1,0,0)))
     if i%100 == 0:
-        print("Loading Rock(%d/1400)"%i)
+        print("Loading Rock(%d/1300)"%i)
 print("Loading Rock done")
 for i in range(1,1301):
-    inputs.append((cv2.imread("D:/data/paper (%d).jpg"%i),(0,1,0)))
+    inputs.append((cv2.imread("D:/RPSData/paper (%d).jpg"%i),(0,1,0)))
     if i%100 == 0:
-        print("Loading Paper(%d/1400)"%i)
+        print("Loading Paper(%d/1300)"%i)
 print("Loading Paper done")
 for i in range(1,1301):
-    inputs.append((cv2.imread("D:/data/scissors (%d).jpg"%i),(0,0,1)))
+    inputs.append((cv2.imread("D:/RPSData/scissors (%d).jpg"%i),(0,0,1)))
     if i%100 == 0:
-        print("Loading Scissors(%d/1400)"%i)
+        print("Loading Scissors(%d/1300)"%i)
 print("Loading Scissors done")
     
 print("Loading validation set")
 for i in range(1301,1401):
-    val.append((cv2.imread("D:/data/rock (%d).jpg"%i),(1,0,0)))
-    val.append((cv2.imread("D:/data/paper (%d).jpg"%i),(0,1,0)))
-    val.append((cv2.imread("D:/data/scissors (%d).jpg"%i),(0,0,1)))
+    val.append((cv2.imread("D:/RPSData/rock (%d).jpg"%i),(1,0,0)))
+    val.append((cv2.imread("D:/RPSData/paper (%d).jpg"%i),(0,1,0)))
+    val.append((cv2.imread("D:/RPSData/scissors (%d).jpg"%i),(0,0,1)))
 print("Loading done")
 
 print("Start training..")
