@@ -23,14 +23,14 @@ X = tf.placeholder(tf.float32,[None,640,480,3])
 pool1 = avg_pool_4x4(X)
 pool2 = avg_pool_4x4(pool1)
 
-WF1 = tf.Variable(tf.truncated_normal([3600,900],stddev=0.1), name = 'ANN_WF1')
-BF1 = tf.Variable(tf.constant(0.1,[900]),name = 'ANN_BF1')
+WF1 = tf.Variable(tf.truncated_normal([3600,900], stddev=0.1), name = 'ANN_WF1')
+BF1 = tf.Variable(tf.constant(0.1,shape=[900]),name = 'ANN_BF1')
 flatten = tf.reshape(pool2,[-1,3600])
 fc1 = tf.nn.relu(tf.matmul(flatten, WF1) + BF1)
 fc1_drop = tf.nn.dropout(fc1, 0.75)
 
-WF2 = tf.Variable(tf.truncated_normal([900,3], stddev=0.1), name = 'ANN_WF2')
-BF2 = tf.Variable(tf.constant(0.1,[3]),name = 'ANN_BF2')
+WF2 = tf.Variable(tf.truncated_normal(shape = [900,3], stddev=0.1), name = 'ANN_WF2')
+BF2 = tf.Variable(tf.constant(0.1,shape = [3]), name = 'ANN_BF2')
 result = tf.nn.softmax(tf.matmul(fc1_drop, WF2) + BF2)
 
 

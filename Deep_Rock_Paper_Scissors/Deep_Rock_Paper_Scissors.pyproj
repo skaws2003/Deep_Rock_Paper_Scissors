@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>b499f534-6d08-4a24-9cd4-536c36717cb4</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>CNN.py</StartupFile>
+    <StartupFile>PiCNN.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
