@@ -1,0 +1,140 @@
+import tensorflow as tf
+import cv2
+import numpy as np
+import time
+import glob
+import random
+import matplotlib.pyplot as plt
+
+
+"""
+
+Graph
+
+"""
+
+
+def weight_init(shape):
+    initial = tf.truncated_normal(shape,stddev=0.1)
+    return tf.Variable(initial)
+
+def bias_init(shape):
+    initial = tf.constant(0.1,shape=shape)
+    return tf.Variable(initial)
+
+def avg_pool_4x4(x):
+    return tf.nn.avg_pool(x,ksize=[1,4,4,3],strides=[1,4,4,1],padding='SAME')
+
+
+    
+X = tf.placeholder(tf.float32,[None,480,640,3])
+WC1 = tf.Variable(tf.truncated_normal([3,3,3,6],name='WC1'))
+BC1 = tf.Variable(tf.ones([6])/10,name='BC1')
+conv1 = tf.nn.relu(tf.nn.conv2d(X,WC1, strides=[1,2,2,1], padding='SAME') + BC1)
+
+WC2 = tf.Variable(tf.truncated_normal([3,3,6,12],name='WC2'))
+BC2 = tf.Variable(tf.ones([12])/10,name='BC2')
+conv2 = tf.nn.relu(tf.nn.conv2d(conv1,WC2,strides=[1,2,2,1],padding='SAME')+BC2)
+
+pooling1 = tf.nn.max_pool(conv2,ksize=[1,4,4,1],strides=[1,4,4,1],padding='SAME')
+
+flatten = tf.reshape(pooling1,[-1,40*30*12])
+WF1 = tf.Variable(tf.truncated_normal([40*30*12,225],name='WF1'))
+BF1 = tf.Variable(tf.ones([225])/10,name = 'BF1')
+fc1 = tf.nn.relu(tf.matmul(flatten,WF1)+BF1)
+fc1_drop = tf.nn.dropout(fc1,0.6)
+
+WF2 = tf.Variable(tf.truncated_normal([225,3],name='WF2'))
+BF2 = tf.Variable(tf.ones([3])/10,name='BF2')
+semi_result = tf.matmul(fc1_drop,WF2)+BF2
+result = tf.nn.softmax(semi_result)
+
+Y = tf.placeholder(tf.float32,[None,3])
+cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=Y, logits=semi_result))
+
+train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+comp_pred = tf.equal(tf.arg_max(result,1), tf.arg_max(Y, 1))
+accuracy = tf.reduce_mean(tf.cast(comp_pred, dtype=tf.float32))
+
+"""
+
+DATA
+
+"""
+
+
+sess = tf.InteractiveSession()
+
+cost_set = []
+accuracy_set = []
+
+print("Start loading...")
+inputs = []
+val = []
+for i in range(0,2001):
+    inputs.append((cv2.imread("D:/data/rock_%d.jpg"%i),(1,0,0)))
+    if i%100 == 0:
+        print("Loading Rock(%d/2500)"%i)
+print("Loading Rock done")
+for i in range(0,2001):
+    inputs.append((cv2.imread("D:/data/paper_%d.jpg"%i),(0,1,0)))
+    if i%100 == 0:
+        print("Loading Paper(%d/2500)"%i)
+print("Loading Paper done")
+for i in range(0,2001):
+    inputs.append((cv2.imread("D:/data/scissors_%d.jpg"%i),(0,0,1)))
+    if i%100 == 0:
+        print("Loading Scissors(%d/2500)"%i)
+print("Loading Scissors done")
+    
+print("Loading validation set")
+for i in range(2001,2301):
+    val.append((cv2.imread("D:/data/rock_%d.jpg"%i),(1,0,0)))
+    val.append((cv2.imread("D:/data/paper_%d.jpg"%i),(0,1,0)))
+    val.append((cv2.imread("D:/data/scissors_%d.jpg"%i),(0,0,1)))
+print("Loading done")
+
+print("Start training..")
+sess.run(tf.global_variables_initializer())
+
+param_list=[WC1,BC1,WC2,BC2,WF1,BF1,WF2,BF2]
+saver = tf.train.Saver()
+
+for i in range(3001):
+    in_X = []
+    in_Y = []
+    val_X = []
+    val_Y = []
+    for step in range(32):
+        index = random.randint(0,6890)
+        in_X.append(inputs[index][0])
+        in_Y.append(inputs[index][1])
+        index = random.randint(0,898)
+        val_X.append(val[index][0])
+        val_Y.append(val[index][1])
+    try:
+        sess.run(train_step,feed_dict={X:in_X,Y:in_Y})
+    except:
+          continue;  
+
+    cost,accu = sess.run([cross_entropy,accuracy],feed_dict={X:val_X,Y:val_Y})
+    accuracy_set.append(accu)
+    cost_set.append(cost)
+    if(i % 10 == 0):
+        print("step %d, accuracy = %f, cost = %f"%(i,accu,cost))
+        if(i%100 ==0):
+            saver.save(sess,'./save/model',global_step = i)
+        if i%1000==0:
+            plt.figure()
+            plt.plot(accuracy_set)
+            plt.show()
+            plt.figure()
+            plt.plot(cost_set)
+            plt.show()
+            accuracy_set.clear()
+            cost_set.clear()
+            
+print("Saving parameters...")
+
+saver.save(sess,"D:/model")
+
